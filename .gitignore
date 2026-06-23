@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Test and lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Editor and OS files
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Documentation build output
+docs/_build/
+
+# Pixi
+.pixi/
+
+# Optional local tooling
+array-api-compat/

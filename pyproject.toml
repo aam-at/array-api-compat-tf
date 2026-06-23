@@ -1,0 +1,119 @@
+[project]
+name = "array-api-compat-tf"
+version = "0.1.0"
+description = "Array API compatibility layer for TensorFlow — patches tensorflow.experimental.numpy to support the Python Array API standard"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Alexander Matyasko", email = "alexander.matyasko@gmail.com" }]
+readme = "README.md"
+keywords = [
+  "tensorflow",
+  "array-api",
+  "array-api-compat",
+  "machine-learning",
+  "scientific-computing",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+dependencies = [
+  "array-api-compat>=1.14.0,<2",
+]
+
+[project.optional-dependencies]
+tensorflow = ["tensorflow>=2.21.0,<3"]
+tensorflow-gpu = ["tensorflow[and-cuda]>=2.21.0,<3"]
+numpy = ["numpy>=1.22"]
+pytorch = ["torch"]
+jax = ["jax"]
+docs = [
+  "furo",
+  "linkify-it-py",
+  "myst-parser",
+  "sphinx",
+  "sphinx-copybutton",
+  "sphinx-autobuild",
+]
+dev = [
+  "pytest",
+  "ruff",
+  "numpy>=1.22",
+  "tensorflow>=2.21.0,<3",
+  "torch",
+  "jax[cpu]",
+]
+
+[project.urls]
+Homepage = "https://github.com/aam-at/array-api-compat-tf"
+Documentation = "https://github.com/aam-at/array-api-compat-tf/blob/main/docs/index.md"
+Repository = "https://github.com/aam-at/array-api-compat-tf"
+Issues = "https://github.com/aam-at/array-api-compat-tf/issues"
+
+[dependency-groups]
+tensorflow = ["tensorflow>=2.21.0,<3"]
+tensorflow-gpu = ["tensorflow[and-cuda]>=2.21.0,<3"]
+numpy = ["numpy>=1.22"]
+pytorch = ["torch"]
+jax = ["jax"]
+docs = [
+  "furo",
+  "linkify-it-py",
+  "myst-parser",
+  "sphinx",
+  "sphinx-copybutton",
+  "sphinx-autobuild",
+]
+dev = [
+  "pytest",
+  "ruff",
+  "numpy>=1.22",
+  "tensorflow>=2.21.0,<3",
+  "torch",
+  "jax[cpu]",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+sources = ["src"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/tests",
+  "/docs",
+]
+
+[tool.ruff]
+src = ["src"]
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+markers = [
+  "torch: tests that require PyTorch",
+  "jax: tests that require JAX",
+  "cross_backend: tests comparing TensorFlow against another backend",
+]
+filterwarnings = [
+  "ignore::DeprecationWarning",
+]
