@@ -27,6 +27,3 @@ docs/_build/
 
 # Pixi
 .pixi/
-
-# Optional local tooling
-array-api-compat/
