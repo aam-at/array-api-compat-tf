@@ -11,8 +11,8 @@ TensorFlow arrays and get back the correct namespace.
 
 Like `array-api-compat`, this is a pure-Python polyfill whose platform support
 follows TensorFlow itself: the default install works on **Linux, macOS, and
-Windows** with CPU TensorFlow. An optional `gpu` extra is available for NVIDIA
-CUDA wheels on Linux.
+Windows** with CPU TensorFlow. Optional `tensorflow-gpu` and `jax-gpu` extras
+are available for NVIDIA CUDA wheels on Linux.
 
 If you encounter any issues, please
 [open an issue](https://github.com/aam-at/array-api-compat-tf/issues).
@@ -42,7 +42,8 @@ python -m pip install .
 python -m pip install --group tensorflow
 ```
 
-Optional backend groups / extras: `numpy`, `pytorch`, `jax`, and `dev`.
+Optional backend groups / extras: `numpy`, `pytorch`, `jax`, `jax-gpu`, and
+`dev`.
 
 ```
 python -m pip install --group numpy
@@ -51,10 +52,11 @@ python -m pip install --group jax
 python -m pip install --group dev
 ```
 
-Optional NVIDIA CUDA TensorFlow wheels on Linux:
+Optional NVIDIA CUDA wheels on Linux (TensorFlow or JAX):
 
 ```
 python -m pip install --group tensorflow-gpu
+python -m pip install --group jax-gpu
 ```
 
 You can also import the TensorFlow namespace directly:

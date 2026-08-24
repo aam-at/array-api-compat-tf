@@ -49,7 +49,7 @@ _T = TypeVar("_T")
 try:
     import torch
 except Exception:  # pragma: no cover - torch may be unavailable
-    torch = None
+    torch = None  # type: ignore[assignment]
 
 # ---------------------------------------------------------------------------
 # Fast subclass check (mirrors array_api_compat._helpers._issubclass_fast)
@@ -165,7 +165,7 @@ def device(x: object, /) -> Any:
     to :func:`array_api_compat.device`.
     """
     if is_tensorflow_array(x):
-        x_device = getattr(x, "device", None)  # type: ignore[union-attr]
+        x_device = getattr(x, "device", None)
         return x_device if x_device is not None else "cpu"
     return array_api_compat.device(x)
 
@@ -181,7 +181,7 @@ def to_device(x: object, device: Any, /, *, stream: Any = None) -> Any:
 
         if stream is not None:
             raise ValueError("The stream argument to to_device() is not supported")
-        current_device = getattr(x, "device", None)  # type: ignore[union-attr]
+        current_device = getattr(x, "device", None)
         if current_device == device:
             return x
         try:
@@ -195,7 +195,7 @@ def to_device(x: object, device: Any, /, *, stream: Any = None) -> Any:
 def size(x: object, /) -> int | None:
     """Return total number of elements, or ``None`` for dynamic shapes."""
     if is_tensorflow_array(x):
-        s = x.shape  # type: ignore[union-attr]
+        s = x.shape  # type: ignore[attr-defined]
         if s.rank is None:
             return None
         total = 1
@@ -206,4 +206,4 @@ def size(x: object, /) -> int | None:
         return total
     import math as _math
 
-    return _math.prod(x.shape)  # type: ignore[union-attr]
+    return _math.prod(x.shape)  # type: ignore[attr-defined]

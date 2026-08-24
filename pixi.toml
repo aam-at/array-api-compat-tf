@@ -5,36 +5,64 @@ requires-pixi = ">=0.65.0"
 
 [environments]
 docs = ["docs"]
-tests = ["tests"]
+tests = ["test-tools", "backends"]
+tests-gpu = ["test-tools", "backends-gpu"]
+dev = ["test-tools", "backends", "docs"]
 
 [dependencies]
 python = "3.12.*"
 
-[feature.tests.dependencies]
-pytest = "*"
-ruff = "*"
+[feature.test-tools.pypi-dependencies]
+# Tool version pins live in one place: pyproject.toml's [project.optional-dependencies].test.
+array-api-compat-tf = { path = ".", editable = true, extras = ["test"] }
 
-[feature.tests.pypi-dependencies]
-array-api-compat-tf = { path = ".", editable = true }
-tensorflow = ">=2.21.0,<3"
-torch = "*"
-jax = { version = "*", extras = ["cpu"] }
-numpy = ">=1.22"
-
-[feature.tests.tasks]
+[feature.test-tools.tasks]
 tests = { cmd = "pytest -v tests/", description = "Run tests", env = { TF_CPP_MIN_LOG_LEVEL = "2", TF_ENABLE_ONEDNN_OPTS = "0" } }
-lint = { cmd = "ruff check src tests", description = "Run ruff" }
+tests-cov = { cmd = "pytest -v --cov=array_api_compat_tf --cov-report=term-missing tests/", description = "Run tests with coverage", env = { TF_CPP_MIN_LOG_LEVEL = "2", TF_ENABLE_ONEDNN_OPTS = "0" } }
+lint = { cmd = "ruff check src tests", description = "Lint with ruff" }
+lint-fix = { cmd = "ruff check --fix src tests", description = "Lint with ruff, autofix" }
+fmt = { cmd = "ruff format src tests", description = "Format with ruff" }
+fmt-check = { cmd = "ruff format --check src tests", description = "Check formatting without writing" }
+typecheck = { cmd = "mypy", description = "Type-check src with mypy" }
+check = { depends-on = [
+  "fmt-check",
+  "lint",
+  "typecheck",
+  "tests",
+], description = "Run all checks: format, lint, typecheck, tests" }
 
-[feature.docs.dependencies]
-furo = "*"
-linkify-it-py = "*"
-myst-parser = "*"
-sphinx = "*"
-sphinx-copybutton = "*"
-sphinx-autobuild = "*"
+[feature.backends.pypi-dependencies]
+# Backend version pins live in one place: pyproject.toml's [project.optional-dependencies].
+# Pull them in here via extras instead of re-pinning, so pixi.toml can't drift out of sync.
+array-api-compat-tf = { path = ".", editable = true, extras = [
+  "tensorflow",
+  "numpy",
+  "pytorch",
+  "jax",
+] }
+
+[feature.backends-gpu]
+# jax[cuda12] only ships Linux wheels; scope the feature to linux-64 so this
+# doesn't break the solve for the other platforms in [workspace.platforms].
+platforms = ["linux-64"]
+
+[feature.backends-gpu.pypi-dependencies]
+# jax[cpu] and jax[cuda12] both pin jaxlib and conflict if installed together,
+# so this is a separate feature/environment rather than an extra on `backends`.
+# Use `pixi run -e tests-gpu tests` on a CUDA 12 Linux host.
+array-api-compat-tf = { path = ".", editable = true, extras = [
+  "tensorflow",
+  "numpy",
+  "pytorch",
+  "jax-gpu",
+] }
 
 [feature.docs.pypi-dependencies]
+# Doc tool pins live in one place: pyproject.toml's [project.optional-dependencies].docs.
+array-api-compat-tf = { path = ".", editable = true, extras = ["docs"] }
 array-api-compat = "*"
 
 [feature.docs.tasks]
 docs = { cmd = "make html", cwd = "docs", description = "Build docs" }
+docs-clean = { cmd = "make clean", cwd = "docs", description = "Remove built docs" }
+docs-serve = { cmd = "sphinx-autobuild . _build/html", cwd = "docs", description = "Build docs and serve with autoreload" }

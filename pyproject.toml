@@ -38,7 +38,9 @@ tensorflow = ["tensorflow>=2.21.0,<3"]
 tensorflow-gpu = ["tensorflow[and-cuda]>=2.21.0,<3"]
 numpy = ["numpy>=1.22"]
 pytorch = ["torch"]
-jax = ["jax"]
+jax = ["jax[cpu]"]
+jax-gpu = ["jax[cuda12]"]
+test = ["pytest", "pytest-cov", "ruff", "mypy"]
 docs = [
   "furo",
   "linkify-it-py",
@@ -49,7 +51,9 @@ docs = [
 ]
 dev = [
   "pytest",
+  "pytest-cov",
   "ruff",
+  "mypy",
   "numpy>=1.22",
   "tensorflow>=2.21.0,<3",
   "torch",
@@ -63,11 +67,15 @@ Repository = "https://github.com/aam-at/array-api-compat-tf"
 Issues = "https://github.com/aam-at/array-api-compat-tf/issues"
 
 [dependency-groups]
+# Kept in sync with [project.optional-dependencies] above (PEP 735 groups vs.
+# pip-installable extras — same version pins, two audiences).
 tensorflow = ["tensorflow>=2.21.0,<3"]
 tensorflow-gpu = ["tensorflow[and-cuda]>=2.21.0,<3"]
 numpy = ["numpy>=1.22"]
 pytorch = ["torch"]
-jax = ["jax"]
+jax = ["jax[cpu]"]
+jax-gpu = ["jax[cuda12]"]
+test = ["pytest", "pytest-cov", "ruff", "mypy"]
 docs = [
   "furo",
   "linkify-it-py",
@@ -78,7 +86,9 @@ docs = [
 ]
 dev = [
   "pytest",
+  "pytest-cov",
   "ruff",
+  "mypy",
   "numpy>=1.22",
   "tensorflow>=2.21.0,<3",
   "torch",
@@ -104,7 +114,50 @@ src = ["src"]
 line-length = 99
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "UP"]
+# Rule families follow array-api-compat's own ruff config (see docs/dev/STYLE.md):
+# https://github.com/data-apis/array-api-compat/blob/main/pyproject.toml
+select = ["E", "F", "I", "W", "UP", "B", "C4", "ISC", "PIE", "FLY", "PERF", "FURB"]
+ignore = [
+  "E402",    # module-level import not at top — deferred backend imports are intentional
+  "B904",    # raise-from not required on re-raise inside thin wrapper functions
+  "B010",    # setattr() with a constant name — used to patch third-party modules dynamically
+  "PERF203", # try/except in a loop — ignored upstream by array-api-compat too; probes are cheap
+]
+
+[tool.ruff.format]
+quote-style = "double"
+skip-magic-trailing-comma = false
+
+[tool.mypy]
+# Pinned to the interpreter pixi actually solves (3.12), not the 3.10 floor in
+# requires-python: newer numpy stubs use PEP 695 syntax mypy can only parse
+# under python_version >= 3.12, regardless of this project's own target.
+python_version = "3.12"
+files = ["src"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+check_untyped_defs = true
+# Not `disallow_untyped_defs`/`strict = true`: private closures in
+# _pytorch_patches.py intentionally mirror the signatures of the third-party
+# functions they patch (see docs/dev/STYLE.md) rather than being separately
+# annotated. Tighten per-module once a full baseline is established.
+
+[[tool.mypy.overrides]]
+# Optional backends are only imported lazily at runtime (see docs/dev/STYLE.md);
+# stubs are absent or incomplete for some of them. array-api-compat itself
+# ships no py.typed marker, and cupy/dask are optional array_api_compat
+# backends we only reference dynamically, never depend on directly.
+module = [
+  "tensorflow.*",
+  "tensorflow.experimental.numpy.*",
+  "torch.*",
+  "jax.*",
+  "array_api_compat.*",
+  "cupy.*",
+  "dask.*",
+]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
