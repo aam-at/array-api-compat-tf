@@ -9,10 +9,28 @@ from typing import Any, Literal
 from array_api_compat_tf.tensorflow._typing import Array, ArrayLike, DType, Shape
 
 __all__ = [
-    "argmin", "approximatetopk", "arange", "argsort", "asarray", "astype",
-    "clip", "concat", "cumulative_sum", "empty", "full", "ones",
-    "result_type", "searchsorted", "sort", "take", "topk", "where", "zeros",
+    "argmin",
+    "approximatetopk",
+    "arange",
+    "argsort",
+    "asarray",
+    "astype",
+    "clip",
+    "concat",
+    "cumulative_sum",
+    "empty",
+    "full",
+    "ones",
+    "result_type",
+    "searchsorted",
+    "sort",
+    "take",
+    "topk",
+    "where",
+    "zeros",
 ]
+
+
 def _normalize_axis(axis: int, ndim: int) -> int:
     if ndim <= 0:
         raise ValueError("topk() requires an array with at least one dimension")
@@ -28,8 +46,8 @@ def _build_moveaxis_perm(ndim: int, source: int, destination: int) -> list[int]:
     perm.insert(destination, source)
     return perm
 
-def asarray(
 
+def asarray(
     ns,
     x: ArrayLike,
     /,
@@ -91,7 +109,6 @@ def asarray(
 
 
 def zeros(
-
     ns,
     shape: Shape | int,
     /,
@@ -110,7 +127,6 @@ def zeros(
 
 
 def arange(
-
     ns,
     start: ArrayLike,
     /,
@@ -139,7 +155,6 @@ def arange(
 
 
 def ones(
-
     ns,
     shape: Shape | int,
     /,
@@ -159,7 +174,6 @@ def ones(
 
 
 def empty(
-
     ns,
     shape: Shape | int,
     /,
@@ -180,7 +194,6 @@ def empty(
 
 
 def full(
-
     ns,
     shape: Shape | int,
     /,
@@ -202,7 +215,6 @@ def full(
 
 
 def astype(ns, x: Array, dtype: DType, /, *, copy: bool = True) -> Array:
-
     """Cast *x* to the given *dtype*.
 
     Parameters
@@ -235,7 +247,6 @@ def astype(ns, x: Array, dtype: DType, /, *, copy: bool = True) -> Array:
 
 
 def clip(
-
     ns,
     x: Array,
     /,
@@ -287,7 +298,6 @@ def clip(
 
 
 def concat(ns, arrays: Sequence[Array], /, *, axis: int = 0) -> Array:
-
     """Concatenate a sequence of tensors along an existing axis.
 
     Parameters
@@ -315,7 +325,6 @@ def concat(ns, arrays: Sequence[Array], /, *, axis: int = 0) -> Array:
 
 
 def cumulative_sum(
-
     ns,
     x: ArrayLike,
     /,
@@ -375,7 +384,6 @@ def cumulative_sum(
 
 
 def argmin(
-
     ns,
     x: ArrayLike,
     /,
@@ -386,9 +394,7 @@ def argmin(
     """Return indices of minimum values, preserving reduced axes when requested."""
     arr = ns.asarray(x)
     if axis is None:
-        out = ns._tf.math.argmin(
-            ns._xp.reshape(arr, (-1,)), axis=0, output_type=ns._tf.int64
-        )
+        out = ns._tf.math.argmin(ns._xp.reshape(arr, (-1,)), axis=0, output_type=ns._tf.int64)
         if keepdims:
             out = ns._tf.reshape(out, ns._tf.ones_like(ns._tf.shape(arr)))
         return out
@@ -399,7 +405,6 @@ def argmin(
 
 
 def sort(
-
     ns,
     x: ArrayLike,
     /,
@@ -442,7 +447,6 @@ def sort(
 
 
 def argsort(
-
     ns,
     x: ArrayLike,
     /,
@@ -536,7 +540,6 @@ def _validate_topk_inputs(ns, x: Array, /, *, k: int, axis: int) -> tuple[int, i
 
 
 def _topk_via_argsort(
-
     ns,
     x: ArrayLike,
     /,
@@ -555,7 +558,6 @@ def _topk_via_argsort(
 
 
 def topk(
-
     ns,
     x: ArrayLike,
     /,
@@ -580,7 +582,6 @@ def topk(
 
 
 def approximatetopk(
-
     ns,
     x: ArrayLike,
     /,
@@ -609,7 +610,6 @@ def approximatetopk(
 
 
 def searchsorted(
-
     ns,
     x1: Array,
     x2: Array,
@@ -676,7 +676,6 @@ def searchsorted(
 
 
 def take(ns, x: Array, indices: Array, /, *, axis: int | None = None) -> Array:
-
     """Select elements from *x* along *axis* (Array API ``take``)."""
     if axis is None:
         x = ns._xp.reshape(x, (-1,))
@@ -685,13 +684,11 @@ def take(ns, x: Array, indices: Array, /, *, axis: int | None = None) -> Array:
 
 
 def where(ns, condition: Array, x1: Array, x2: Array, /) -> Array:
-
     """Element-wise selection (Array API ``where``)."""
     return ns._tf.where(condition, x1, x2)
 
 
 def result_type(ns, *arrays_and_dtypes: Any) -> Any:
-
     """Determine the result dtype from inputs (Array API
     ``result_type``)."""
     import numpy as _np
@@ -706,5 +703,3 @@ def result_type(ns, *arrays_and_dtypes: Any) -> Any:
         return dtypes[0]
     np_result = _np.result_type(*(d.as_numpy_dtype for d in dtypes))
     return ns._tf.dtypes.as_dtype(np_result)
-
-

@@ -21,6 +21,7 @@ __all__ = [
 
 _log = logging.getLogger(__name__)
 
+
 class TensorFlowArrayApiNamespace:
     """Array API-compatible namespace backed by TensorFlow.
 
@@ -108,6 +109,7 @@ for _name in _ALIAS_NAMES:
         (lambda f: lambda self, /, *args, **kwargs: f(self, *args, **kwargs))(_fn),
     )
 
+
 @lru_cache(maxsize=1)
 def get_namespace() -> TensorFlowArrayApiNamespace:
     """Return a cached :class:`TensorFlowArrayApiNamespace`.
@@ -130,7 +132,7 @@ def get_namespace() -> TensorFlowArrayApiNamespace:
     except ImportError as exc:
         raise ImportError(
             "TensorFlow is required for array_api_compat_tf. "
-            "Install it with: pip install \"array-api-compat-tf[tensorflow]\" "
+            'Install it with: pip install "array-api-compat-tf[tensorflow]" '
             "(or pip install --group tensorflow from a checkout)"
         ) from exc
     return TensorFlowArrayApiNamespace(tf)
@@ -152,21 +154,21 @@ def namespace_supports_required_ops(namespace: object) -> bool:
     probe = tf.constant([1.0, 3.0], dtype=tf.float32)
 
     _checks: list[tuple[str, Any]] = [
-        ("asarray(copy=False)", lambda: namespace.asarray(probe, copy=False)),  # type: ignore[union-attr]
-        ("asarray(device=)", lambda: namespace.asarray(probe, device="/cpu:0")),  # type: ignore[union-attr]
-        ("arange(device=)", lambda: namespace.arange(3, device="/cpu:0")),  # type: ignore[union-attr]
-        ("astype(copy=False)", lambda: namespace.astype(probe, tf.float32, copy=False)),  # type: ignore[union-attr]
-        ("clip(min=)", lambda: namespace.clip(probe, min=0.0)),  # type: ignore[union-attr]
-        ("concat()", lambda: namespace.concat([probe, probe], axis=0)),  # type: ignore[union-attr]
+        ("asarray(copy=False)", lambda: namespace.asarray(probe, copy=False)),  # type: ignore[attr-defined]
+        ("asarray(device=)", lambda: namespace.asarray(probe, device="/cpu:0")),  # type: ignore[attr-defined]
+        ("arange(device=)", lambda: namespace.arange(3, device="/cpu:0")),  # type: ignore[attr-defined]
+        ("astype(copy=False)", lambda: namespace.astype(probe, tf.float32, copy=False)),  # type: ignore[attr-defined]
+        ("clip(min=)", lambda: namespace.clip(probe, min=0.0)),  # type: ignore[attr-defined]
+        ("concat()", lambda: namespace.concat([probe, probe], axis=0)),  # type: ignore[attr-defined]
         (
             "cumulative_sum(include_initial=True)",
-            lambda: namespace.cumulative_sum(probe, axis=0, include_initial=True),  # type: ignore[union-attr]
+            lambda: namespace.cumulative_sum(probe, axis=0, include_initial=True),  # type: ignore[attr-defined]
         ),
-        ("argmin(keepdims=True)", lambda: namespace.argmin(probe, axis=0, keepdims=True)),  # type: ignore[union-attr]
-        ("topk(k=1)", lambda: namespace.topk(probe, k=1)),  # type: ignore[union-attr]
-        ("approximatetopk(k=1)", lambda: namespace.approximatetopk(probe, k=1)),  # type: ignore[union-attr]
-        ("searchsorted(right=True)", lambda: namespace.searchsorted(probe, probe, right=True)),  # type: ignore[union-attr]
-        ("linalg.vector_norm(ord=1)", lambda: namespace.linalg.vector_norm(probe, ord=1, axis=0)),  # type: ignore[union-attr]
+        ("argmin(keepdims=True)", lambda: namespace.argmin(probe, axis=0, keepdims=True)),  # type: ignore[attr-defined]
+        ("topk(k=1)", lambda: namespace.topk(probe, k=1)),  # type: ignore[attr-defined]
+        ("approximatetopk(k=1)", lambda: namespace.approximatetopk(probe, k=1)),  # type: ignore[attr-defined]
+        ("searchsorted(right=True)", lambda: namespace.searchsorted(probe, probe, right=True)),  # type: ignore[attr-defined]
+        ("linalg.vector_norm(ord=1)", lambda: namespace.linalg.vector_norm(probe, ord=1, axis=0)),  # type: ignore[attr-defined]
     ]
 
     for label, check in _checks:
