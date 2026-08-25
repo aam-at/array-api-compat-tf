@@ -1,6 +1,7 @@
 """Shared helpers for array-api-compat-tf."""
 
 from array_api_compat_tf.common._helpers import (
+    ArrayApiNamespace,
     array_namespace,
     device,
     is_array,
@@ -11,6 +12,7 @@ from array_api_compat_tf.common._helpers import (
 )
 
 __all__ = [
+    "ArrayApiNamespace",
     "array_namespace",
     "device",
     "is_array",

@@ -32,6 +32,7 @@ from array_api_compat_tf.tensorflow._namespace import (
 )
 
 __all__ = [
+    "ArrayApiNamespace",
     "array_namespace",
     "device",
     "is_array",
