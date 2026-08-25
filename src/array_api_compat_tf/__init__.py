@@ -10,6 +10,7 @@ __version__ = "0.1.0"
 
 from array_api_compat_tf import _pytorch_patches  # noqa: F401  apply third-party patches early
 from array_api_compat_tf.common import (
+    ArrayApiNamespace,
     array_namespace,
     device,
     is_array,
@@ -26,6 +27,7 @@ from array_api_compat_tf.tensorflow import (
 )
 
 __all__ = [
+    "ArrayApiNamespace",
     "TensorFlowArrayApiLinalg",
     "TensorFlowArrayApiNamespace",
     "array_namespace",
