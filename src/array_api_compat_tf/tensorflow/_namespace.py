@@ -36,7 +36,7 @@ class TensorFlowArrayApiNamespace:
     * ``clip`` — accepts keyword-only ``min``/``max``
     * ``concat`` — wraps ``concatenate`` with ``axis`` keyword
     * ``cumulative_sum`` — adds ``include_initial`` support
-    * ``argmin`` — accepts ``keepdims`` keyword
+    * ``argmin``, ``argmax`` — accept ``keepdims`` keyword
     * ``searchsorted`` — wraps ``tf.searchsorted`` with Array API signature
     * ``sort`` — adds ``descending`` and ``stable`` keywords
     * ``argsort`` — adds ``descending`` and ``stable`` keywords
@@ -165,6 +165,7 @@ def namespace_supports_required_ops(namespace: object) -> bool:
             lambda: namespace.cumulative_sum(probe, axis=0, include_initial=True),  # type: ignore[attr-defined]
         ),
         ("argmin(keepdims=True)", lambda: namespace.argmin(probe, axis=0, keepdims=True)),  # type: ignore[attr-defined]
+        ("argmax(keepdims=True)", lambda: namespace.argmax(probe, axis=0, keepdims=True)),  # type: ignore[attr-defined]
         ("topk(k=1)", lambda: namespace.topk(probe, k=1)),  # type: ignore[attr-defined]
         ("approximatetopk(k=1)", lambda: namespace.approximatetopk(probe, k=1)),  # type: ignore[attr-defined]
         ("searchsorted(right=True)", lambda: namespace.searchsorted(probe, probe, right=True)),  # type: ignore[attr-defined]

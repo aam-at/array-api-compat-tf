@@ -121,6 +121,35 @@ class TestCumulativeSum:
         assert_array_equal(out, [[0.0, 1.0, 3.0], [0.0, 3.0, 7.0]])
 
 
+@pytest.mark.parametrize(("name", "expected"), [("argmin", [[1], [0]]), ("argmax", [[0], [1]])])
+class TestArgReductions:
+    def test_keepdims(self, xp, name, expected):
+        t = tf.constant([[3.0, 1.0, 2.0], [0.0, 5.0, 4.0]])
+        out = getattr(xp, name)(t, axis=1, keepdims=True)
+        assert out.shape == (2, 1)
+        assert out.dtype == tf.int64
+        assert_array_equal(out, expected)
+
+    def test_drops_axis_by_default(self, xp, name, expected):
+        t = tf.constant([[3.0, 1.0, 2.0], [0.0, 5.0, 4.0]])
+        out = getattr(xp, name)(t, axis=1)
+        assert out.shape == (2,)
+        assert_array_equal(out, [row[0] for row in expected])
+
+    def test_no_axis_flattens(self, xp, name, expected):
+        t = tf.constant([[3.0, 1.0, 2.0], [0.0, 5.0, 4.0]])
+        out = getattr(xp, name)(t, keepdims=True)
+        assert out.shape == (1, 1)
+        assert_array_equal(out, [[3 if name == "argmin" else 4]])
+
+    def test_first_occurrence_on_ties(self, xp, name, expected):
+        # The Array API returns the first index among equal extremes; callers use
+        # argmax of a boolean mask to find its first True.
+        t = tf.constant([[2.0, 0.0, 0.0, 2.0]])
+        out = getattr(xp, name)(t, axis=1)
+        assert_array_equal(out, [1 if name == "argmin" else 0])
+
+
 class TestSearchsorted:
     def test_right(self, xp):
         x = tf.constant([1.0, 3.0, 5.0, 7.0])
