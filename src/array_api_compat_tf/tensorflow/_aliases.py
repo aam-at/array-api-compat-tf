@@ -9,6 +9,7 @@ from typing import Any, Literal
 from array_api_compat_tf.tensorflow._typing import Array, ArrayLike, DType, Shape
 
 __all__ = [
+    "argmax",
     "argmin",
     "approximatetopk",
     "arange",
@@ -383,6 +384,32 @@ def cumulative_sum(
     return out
 
 
+def _arg_reduce(ns, reduce, x: ArrayLike, axis: int | None, keepdims: bool) -> Array:
+    """Apply ``tf.math.argmin`` or ``argmax``, preserving reduced axes when requested."""
+    arr = ns.asarray(x)
+    if axis is None:
+        out = reduce(ns._xp.reshape(arr, (-1,)), axis=0, output_type=ns._tf.int64)
+        if keepdims:
+            out = ns._tf.reshape(out, ns._tf.ones_like(ns._tf.shape(arr)))
+        return out
+    out = reduce(arr, axis=axis, output_type=ns._tf.int64)
+    if keepdims:
+        out = ns._tf.expand_dims(out, axis=axis)
+    return out
+
+
+def argmax(
+    ns,
+    x: ArrayLike,
+    /,
+    *,
+    axis: int | None = None,
+    keepdims: bool = False,
+) -> Array:
+    """Return indices of maximum values, preserving reduced axes when requested."""
+    return _arg_reduce(ns, ns._tf.math.argmax, x, axis, keepdims)
+
+
 def argmin(
     ns,
     x: ArrayLike,
@@ -392,16 +419,7 @@ def argmin(
     keepdims: bool = False,
 ) -> Array:
     """Return indices of minimum values, preserving reduced axes when requested."""
-    arr = ns.asarray(x)
-    if axis is None:
-        out = ns._tf.math.argmin(ns._xp.reshape(arr, (-1,)), axis=0, output_type=ns._tf.int64)
-        if keepdims:
-            out = ns._tf.reshape(out, ns._tf.ones_like(ns._tf.shape(arr)))
-        return out
-    out = ns._tf.math.argmin(arr, axis=axis, output_type=ns._tf.int64)
-    if keepdims:
-        out = ns._tf.expand_dims(out, axis=axis)
-    return out
+    return _arg_reduce(ns, ns._tf.math.argmin, x, axis, keepdims)
 
 
 def sort(
