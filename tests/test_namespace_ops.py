@@ -230,6 +230,53 @@ class TestTake:
         assert_array_equal(out, [[10.0, 30.0], [40.0, 60.0]])
 
 
+class TestTakeAlongAxis:
+    @pytest.mark.parametrize("compiled", [False, True], ids=["eager", "xla"])
+    @pytest.mark.parametrize(
+        ("shape", "idx_shape", "axis"),
+        [
+            ((5,), (3,), 0),
+            ((3, 5), (3, 2), 1),
+            ((3, 5), (1, 2), -1),
+            ((3, 5), (2, 5), 0),
+            ((2, 3, 4), (2, 1, 4), 1),
+            ((2, 3, 4), (1, 3, 2), -1),
+        ],
+    )
+    def test_matches_numpy(self, xp, shape, idx_shape, axis, compiled):
+        """Ranks, axes, broadcasts, and negative indices match NumPy."""
+        np = pytest.importorskip("numpy")
+        rng = np.random.default_rng(123)
+        arr = rng.standard_normal(shape)
+        idx = rng.integers(-shape[axis], shape[axis], size=idx_shape, dtype=np.int64)
+
+        def gather(a, i):
+            return xp.take_along_axis(a, i, axis=axis)
+
+        if compiled:
+            gather = tf.function(gather, jit_compile=True, autograph=False)
+        out = gather(tf.constant(arr), tf.constant(idx))
+        assert_allclose(out, np.take_along_axis(arr, idx, axis=axis))
+
+    def test_axis_none_gathers_from_flattened(self, xp):
+        t = tf.constant([[1.0, 2.0], [3.0, 4.0]])
+        out = xp.take_along_axis(t, tf.constant([3, 0], dtype=tf.int64), axis=None)
+        assert_array_equal(out, [4.0, 1.0])
+
+    def test_graph_has_no_scatter_or_broadcast_args(self, xp):
+        """tf2xla cannot constant-fold BroadcastArgs on a scatter in large graphs."""
+        x = tf.zeros((4, 64), dtype=tf.float32)
+
+        @tf.function(jit_compile=True, autograph=False)
+        def kernel(a):
+            return xp.take_along_axis(a, xp.argsort(a, axis=1), axis=1)
+
+        graph = kernel.get_concrete_function(x).graph
+        forbidden = {"TensorScatterUpdate", "BroadcastArgs"}
+        assert not [op.type for op in graph.get_operations() if op.type in forbidden]
+        assert tuple(kernel(x).shape) == (4, 64)
+
+
 class TestWhere:
     def test_basic(self, xp):
         cond = tf.constant([True, False, True])

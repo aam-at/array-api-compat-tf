@@ -26,6 +26,7 @@ __all__ = [
     "searchsorted",
     "sort",
     "take",
+    "take_along_axis",
     "topk",
     "where",
     "zeros",
@@ -699,6 +700,76 @@ def take(ns, x: Array, indices: Array, /, *, axis: int | None = None) -> Array:
         x = ns._xp.reshape(x, (-1,))
         axis = 0
     return ns._tf.gather(x, indices, axis=axis)
+
+
+def take_along_axis(ns, x: Array, indices: Array, /, *, axis: int | None = -1) -> Array:
+    """Gather *indices* along *axis* (Array API ``take_along_axis``), XLA-safe.
+
+    ``tf.experimental.numpy.take_along_axis`` builds its broadcast shape with
+    ``tensor_scatter_update(tf.shape(...))`` and then ``broadcast_dynamic_shape``,
+    which emits ``BroadcastArgs`` on a scatter output that ``tf2xla`` fails to
+    constant-fold in large graphs. This broadcasts the two shapes directly
+    (statically when known) and gathers with ``batch_dims=rank - 1``. Negative
+    indices count from the end; ``axis=None`` gathers from the flattened array.
+    """
+    tf = ns._tf
+    x = tf.convert_to_tensor(x)
+    indices = tf.convert_to_tensor(indices)
+    if axis is None:
+        if indices.shape.rank is not None and indices.shape.rank != 1:
+            raise ValueError(f"indices must be 1-D when axis=None, got rank {indices.shape.rank}")
+        return take_along_axis(ns, tf.reshape(x, [-1]), indices, axis=0)
+
+    rank = x.shape.rank
+    if rank is None:
+        return ns._xp.take_along_axis(x, indices, axis)
+    axis = _normalize_axis(operator.index(axis), rank)
+    if indices.shape.rank is not None and indices.shape.rank != rank:
+        raise ValueError(
+            f"x and indices must have the same rank, got {rank} and {indices.shape.rank}"
+        )
+
+    if x.shape.is_fully_defined() and indices.shape.is_fully_defined():
+        x_dims = x.shape.as_list()
+        idx_dims = indices.shape.as_list()
+        x_target, idx_target = list(x_dims), list(idx_dims)
+        for d in range(rank):
+            if d == axis or x_dims[d] == idx_dims[d]:
+                continue
+            if x_dims[d] == 1:
+                x_target[d] = idx_dims[d]
+            elif idx_dims[d] == 1:
+                idx_target[d] = x_dims[d]
+            else:
+                raise ValueError(
+                    f"cannot broadcast shapes {tuple(x_dims)} and {tuple(idx_dims)} along axis {d}"
+                )
+        if x_target != x_dims:
+            x = tf.broadcast_to(x, x_target)
+        if idx_target != idx_dims:
+            indices = tf.broadcast_to(indices, idx_target)
+        axis_len: Any = x_target[axis]
+    else:
+        x_sh = tf.unstack(tf.shape(x, out_type=tf.int32))
+        idx_sh = tf.unstack(tf.shape(indices, out_type=tf.int32))
+        x_target_t, idx_target_t = [], []
+        for d in range(rank):
+            if d == axis:
+                x_target_t.append(x_sh[d])
+                idx_target_t.append(idx_sh[d])
+            else:
+                b_d = tf.where(tf.equal(x_sh[d], 1), idx_sh[d], x_sh[d])
+                x_target_t.append(b_d)
+                idx_target_t.append(b_d)
+        x = tf.broadcast_to(x, tf.stack(x_target_t))
+        indices = tf.broadcast_to(indices, tf.stack(idx_target_t))
+        axis_len = tf.cast(x_sh[axis], indices.dtype)
+
+    indices = tf.where(indices < 0, indices + axis_len, indices)
+    moved_x = _moveaxis(ns, x, axis, rank - 1)
+    moved_indices = _moveaxis(ns, indices, axis, rank - 1)
+    gathered = tf.gather(moved_x, moved_indices, batch_dims=rank - 1)
+    return _moveaxis(ns, gathered, rank - 1, axis)
 
 
 def where(ns, condition: Array, x1: Array, x2: Array, /) -> Array:

@@ -41,6 +41,8 @@ class TensorFlowArrayApiNamespace:
     * ``sort`` — adds ``descending`` and ``stable`` keywords
     * ``argsort`` — adds ``descending`` and ``stable`` keywords
     * ``topk`` — normalized tuple return with ``axis`` support
+    * ``take_along_axis`` — XLA-safe: no ``tensor_scatter_update`` or
+      ``BroadcastArgs`` in the graph, negative indices, ``axis=None``
     * ``approximatetopk`` — uses ``tf.math.approx_max_k`` when available and
       falls back to exact ``topk`` otherwise
     * ``linalg.vector_norm`` — full ord support (1, 2, inf, −inf, p)
