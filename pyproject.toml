@@ -1,6 +1,6 @@
 [project]
 name = "array-api-compat-tf"
-version = "0.1.0"
+version = "0.2.0"
 description = "Array API compatibility layer for TensorFlow — patches tensorflow.experimental.numpy to support the Python Array API standard"
 requires-python = ">=3.10"
 license = "MIT"

@@ -7,7 +7,7 @@ arrays get :mod:`array_api_compat`'s namespaces unchanged: importing this
 package modifies no other module.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from array_api_compat_tf.common import (
     ArrayApiNamespace,
