@@ -1,9 +1,10 @@
 """Array API compatibility layer for TensorFlow.
 
 Patches ``tensorflow.experimental.numpy`` to provide a namespace that
-conforms to the Python Array API standard. Also serves as a drop-in
-enhancement for :mod:`array_api_compat` across TensorFlow, PyTorch, JAX,
-and NumPy arrays via :func:`array_namespace`.
+conforms to the Python Array API standard, and extends
+:mod:`array_api_compat`'s :func:`array_namespace` to TensorFlow tensors. Other
+arrays get :mod:`array_api_compat`'s namespaces unchanged: importing this
+package modifies no other module.
 """
 
 __version__ = "0.1.0"

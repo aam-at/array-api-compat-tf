@@ -135,6 +135,9 @@ The scope of this library is limited to:
 
 Things that are out of scope include:
 
+- modifying other frameworks' namespaces: NumPy, PyTorch, and JAX arrays get
+  `array-api-compat`'s namespaces unchanged, and importing this package patches
+  no other module,
 - reimplementing operations that TensorFlow already exposes correctly,
 - functions that have not yet been standardised,
 - replacing TensorFlow's array object with a separate wrapper type.

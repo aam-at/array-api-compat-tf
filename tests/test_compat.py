@@ -150,3 +150,30 @@ class TestSize:
     def test_numpy_array(self):
         a = np.array([1.0, 2.0, 3.0])
         assert size(a) == 3
+
+
+def test_import_leaves_other_frameworks_untouched():
+    """Importing the package patches no NumPy, PyTorch, or JAX namespace."""
+    import subprocess
+    import sys
+
+    code = (
+        "import importlib\n"
+        "names = ['array_api_compat.numpy', 'array_api_compat.common._helpers',\n"
+        "         'array_api_compat.torch', 'jax.numpy']\n"
+        "mods = {}\n"
+        "for name in names:\n"
+        "    try:\n"
+        "        mods[name] = importlib.import_module(name)\n"
+        "    except ImportError:\n"
+        "        pass\n"
+        "before = {name: dict(vars(m)) for name, m in mods.items()}\n"
+        "import array_api_compat_tf\n"
+        "for name, m in mods.items():\n"
+        "    assert dict(vars(m)) == before[name], f'{name} was modified'\n"
+        "assert not hasattr(mods['array_api_compat.numpy'], 'topk')\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, timeout=300
+    )
+    assert result.returncode == 0, result.stderr[-3000:]
